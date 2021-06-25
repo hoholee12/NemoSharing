@@ -1,0 +1,47 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      NemoSeamless @DCLab.
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <img [src]="photo">
+
+  <ion-fab vertical="top" horizontal="start" slot="fixed">
+    <ion-grid>
+      <ion-row item-content>
+        <ion-label><ion-text color="danger">2021-05-28T11:06Z</ion-text></ion-label>
+      </ion-row>
+      <ion-row item-content>
+        <ion-label><ion-text color="danger">Seoul</ion-text></ion-label>
+      </ion-row>
+    </ion-grid>
+  </ion-fab>
+
+  <ion-fab vertical="top" horizontal="end" slot="fixed">
+    <ion-grid>
+      <ion-row item-content>
+        <ion-col col-md-3 class="alsign-text-middle">
+          <ion-label><ion-text color="warning">Sync</ion-text></ion-label>
+        </ion-col>
+        <ion-col col-md-3 class="alsign-text-middle">
+          <ion-checkbox color="warning" [(ngModel)]="seamlessMode" (ionChange)=isChecked()></ion-checkbox>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-fab>
+
+  <ion-fab vertical="bottom" horizontal="center" slot="fixed">
+    <ion-fab-button (click)="takePicture()">
+      <ion-icon name="camera"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="takeGallery()">
+      <ion-icon name="image-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
