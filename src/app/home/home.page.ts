@@ -7,7 +7,6 @@ import { HttpClient, HttpClientModule } from "@angular/common/http";
 import { Geolocation } from '@ionic-native/geolocation';
 
 
-
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
