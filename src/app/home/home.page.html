@@ -12,10 +12,13 @@
   <ion-fab vertical="top" horizontal="start" slot="fixed">
     <ion-grid>
       <ion-row item-content>
-        <ion-label><ion-text color="danger">2021-05-28T11:06Z</ion-text></ion-label>
+        <ion-label><ion-text color="danger">{{datetime}}</ion-text></ion-label>
       </ion-row>
       <ion-row item-content>
-        <ion-label><ion-text color="danger">Seoul</ion-text></ion-label>
+        <ion-label><ion-text color="danger">{{geolat}}</ion-text></ion-label>
+      </ion-row>
+      <ion-row item-content>
+        <ion-label><ion-text color="danger">{{geolong}}</ion-text></ion-label>
       </ion-row>
     </ion-grid>
   </ion-fab>

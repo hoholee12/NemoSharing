@@ -1,9 +1,11 @@
 import { Component, ɵSafeResourceUrl } from '@angular/core';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, Plugins } from '@capacitor/core';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient, HttpClientModule } from "@angular/common/http";
+import { Geolocation } from '@ionic-native/geolocation';
+
 
 
 @Component({
@@ -13,11 +15,27 @@ import { HttpClient, HttpClientModule } from "@angular/common/http";
 })
 export class HomePage {
   private file: File;
+  
+  public geolat = "";
+  public geolong = "";
+  public datetime = "";
 
   seamlessMode: boolean;
   photo: SafeResourceUrl;
 
   constructor(private sanitizer: DomSanitizer, private http: HttpClient) {}
+
+  //for browser
+  async locate(){
+    await Geolocation.getCurrentPosition().then((resp)=>{
+      this.geolat = "latitude: " + resp.coords.latitude;
+      this.geolong = "longitude: " + resp.coords.longitude;
+    }).catch((error)=>{
+      this.geolat = "latitude: error";
+      this.geolong = "longitude: error";
+    });
+    
+  }
 
   async dataURItoBlob(dataURI) {
     // convert base64 to raw binary data held in a string
@@ -71,7 +89,11 @@ export class HomePage {
     };
 
     const image = await Camera.getPhoto(options);
-    this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(image && (image.dataUrl));
+        this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(image && (image.dataUrl));
+
+    this.datetime = new Date().toDateString();
+    this.locate();
+    
 
     if(this.seamlessMode){
       let photoblob = this.dataURItoBlob(image.dataUrl);
@@ -105,7 +127,11 @@ export class HomePage {
 
     const image = await Camera.getPhoto(options);
     this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(image && (image.dataUrl));
+
+    this.datetime = new Date().toDateString();
+    this.locate();
     
+
     if(this.seamlessMode){
       let photoblob = this.dataURItoBlob(image.dataUrl);
 
