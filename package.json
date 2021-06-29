@@ -37,6 +37,7 @@
     "@types/jsftp": "^2.1.0",
     "@types/multer": "^1.4.5",
     "basic-ftp": "^4.6.6",
+    "cordova-plugin-camera": "^5.0.2",
     "cordova-plugin-camera-with-exif": "^1.4.3",
     "cordova-plugin-ftp": "^1.1.1",
     "exif-js": "^2.3.0",

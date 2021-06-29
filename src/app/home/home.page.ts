@@ -19,6 +19,7 @@ export class HomePage {
   public geolat = "";
   public geolong = "";
   public datetime = "";
+  public geoerror = "";
 
   seamlessMode: boolean;
   photo: SafeResourceUrl;
@@ -31,6 +32,7 @@ export class HomePage {
       this.geolat = "latitude: " + resp.coords.latitude;
       this.geolong = "longitude: " + resp.coords.longitude;
     }).catch((error)=>{
+      this.geoerror = error;
       this.geolat = "latitude: error";
       this.geolong = "longitude: error";
     });
@@ -89,10 +91,12 @@ export class HomePage {
     };
 
     const image = await Camera.getPhoto(options);
-        this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(image && (image.dataUrl));
+    this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(image.dataUrl);
+    console.log(image);
+    console.log(this.photo);
 
     this.datetime = new Date().toDateString();
-    this.locate();
+    await this.locate();
     
 
     if(this.seamlessMode){
@@ -126,10 +130,12 @@ export class HomePage {
     };
 
     const image = await Camera.getPhoto(options);
-    this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(image && (image.dataUrl));
+    this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(image.dataUrl);
+    console.log(image);
+    console.log(this.photo);
 
     this.datetime = new Date().toDateString();
-    this.locate();
+    await this.locate();
     
 
     if(this.seamlessMode){
