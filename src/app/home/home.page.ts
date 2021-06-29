@@ -8,9 +8,6 @@ import { Geolocation } from '@ionic-native/geolocation';
 import { Platform } from '@ionic/angular';
 
 
-import { FTP } from '@ionic-native/ftp/ngx';
-
-
 declare var window: any;
 
 
@@ -32,7 +29,7 @@ export class HomePage {
   
   public path = "";
   
-  constructor(private sanitizer: DomSanitizer, private http: HttpClient, private platform: Platform, private ftp: FTP) {}
+  constructor(private sanitizer: DomSanitizer, private http: HttpClient, private platform: Platform) {}
 
   //for browser
   locate(){
@@ -120,35 +117,42 @@ export class HomePage {
       };
       const fileName = new Date().getTime() + ".jpeg";
       Camera.getPhoto(options).then((image)=>{
-		try{
-			const tempstorage = Filesystem.readFile({path: image.path});
-		   
-			this.path = image.path;
-			this.geoerror = this.path;
-			  
-			this.base64FromPath(image.webPath).then((base64Data)=>{
-			  this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(base64Data);
-			});
+      try{
+        const tempstorage = Filesystem.readFile({path: image.path});
+        
+        this.path = image.path;
+        this.geoerror = this.path;
+          
+        this.base64FromPath(image.webPath).then((base64Data)=>{
+          this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(base64Data);
+        });
+        
+        this.path = this.path.replace('file://', '');
+      }catch{}
+      finally{
+       
+		if(this.seamlessMode){
+		  //try{this.ftp.disconnect();}catch{}
+			//this.ftp.connect('115.145.170.225:1111', 'username', 'password').then((success)=>{
+		  //  this.ftp.upload(this.path, 'destination/' + fileName);
+		  //});
+		  try{ window.cordova.plugin.ftp.disconnect(); } catch{}
+		  try{
+			window.cordova.plugin.ftp.connect('115.145.170.225:1111', 'username', 'password');
+		  }
+		  catch{}
+		  finally{
+			window.cordova.plugin.ftp.upload(this.path, "destination/" + fileName);
+		  }
+		}
 			
-			this.path = this.path.replace('file://', '');
-		}catch{}
-		finally{	
-			if(this.seamlessMode){
-				//try{this.ftp.disconnect();}catch{}
-					//this.ftp.connect('115.145.170.225:1111', 'username', 'password').then((success)=>{
-				//  this.ftp.upload(this.path, 'destination/' + fileName);
-				//});
-				try{ window.cordova.plugin.ftp.disconnect(); } catch{}
-				try{
-					window.cordova.plugin.ftp.connect('115.145.170.225:1111', 'username', 'password');
-				}
-				catch{}
-				finally{
-					window.cordova.plugin.ftp.upload(this.path, "destination/" + fileName);
-				}
-			}
-        }
-      });
+
+      }
+      //window.cordova.plugin.JJsftp.connect('115.145.170.225', 'nemoux', 'nemoux');
+			//window.cordova.plugin.sftp.upload(this.path, "destination/" + fileName);
+      //window.cordova.plugin.JJsftp.upload(this.path, "destination/" + fileName);
+
+    });
       
 
       
