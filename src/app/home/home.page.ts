@@ -7,6 +7,8 @@ import { HttpClient, HttpClientModule } from "@angular/common/http";
 import { Geolocation } from '@ionic-native/geolocation';
 import { Platform } from '@ionic/angular';
 
+import { Diagnostic } from '@ionic-native/diagnostic/ngx';
+
 
 declare var window: any;
 
@@ -28,21 +30,29 @@ export class HomePage {
   
   public path = "";
   
-  constructor(private sanitizer: DomSanitizer, private http: HttpClient, private platform: Platform) {}
+  constructor(private sanitizer: DomSanitizer, private http: HttpClient, private platform: Platform, private diagnostic: Diagnostic) {}
 
   //for browser
   locate(){
-    Geolocation.getCurrentPosition().then((resp)=>{
-      this.geolat = "latitude: " + resp.coords.latitude;
-      this.geolong = "longitude: " + resp.coords.longitude;
-    }).catch((error)=>{
-      
-      this.geolat = "latitude: error";
-      this.geolong = "longitude: error";
-    });
-    
+    if(this.diagnostic.isLocationAuthorized() && this.diagnostic.isLocationAvailable()){
 
-    this.datetime = new Date().toDateString();
+      this.platform.ready().then(()=>{
+        Geolocation.getCurrentPosition({timeout:30000}).then((resp)=>{
+          this.geolat = "latitude: " + resp.coords.latitude;
+          this.geolong = "longitude: " + resp.coords.longitude;
+        }).catch((error)=>{
+          
+          this.geolat = "latitude: error";
+          this.geolong = "longitude: error";
+        });
+        this.datetime = new Date().toDateString();  
+      });
+    }
+    else{
+      
+      this.geolat = "latitude: not authorized?";
+      this.geolong = "longitude: not authorized?";
+    }
   }
 
   async dataURItoBlob(dataURI) {
