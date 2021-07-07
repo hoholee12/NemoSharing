@@ -31,6 +31,16 @@ export class HomePage {
   public long: number;
   public mtime: number;
 
+  //latency check
+  public displayLatency1 = '';
+  public displayLatency2 = '';
+  public displayLatency3 = '';
+  public displayLatency4 = '';
+  public latencyHtml: number;
+  public latencyExif: number;
+  public latencySend: number;
+  public latencyFind: number;
+
   seamlessMode: boolean;
   photo: SafeResourceUrl;
   
@@ -54,7 +64,7 @@ export class HomePage {
           this.geolat = "latitude: " + pos.coords.latitude;
           this.geolong = "longitude: " + pos.coords.longitude;
         });
-          
+
         this.datetime = new Date().toDateString();  
       });
     }
@@ -126,11 +136,12 @@ export class HomePage {
     var count = 0;
     var total = 0;
     
-  
+    this.latencyFind = new Date().getTime();
     Filesystem.readdir({path: '', directory: Directory.Documents}).then((result)=>{
       this.uplist = [];
       
       var counter = result.files.length;
+      
       result.files.forEach((value, idx)=>{
         total++;
           /*
@@ -140,13 +151,14 @@ export class HomePage {
           })
           */
         Filesystem.readFile({path: value, directory: Directory.Documents}).then((result)=>{
-          
+          this.latencyExif = new Date().getTime();
           var exifObj = piexif.load(atob(result.data));
                   
           //1. photo taken in range of 0.0000005 lat/long
           var latoff = Math.floor(this.lat * 10000000) - Math.floor(piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLatitude]) * 10000000);
           var longoff = Math.floor(this.long * 10000000) - Math.floor(piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLongitude]) * 10000000);
-                  
+          this.latencyExif = new Date().getTime() - this.latencyExif;
+
           if(latoff < 10000 && latoff > -10000 && longoff < 10000 && longoff > -10000){
             //2. photo taken in under 5 minutes
             Filesystem.stat({path: value, directory: Directory.Documents}).then((result)=>{
@@ -162,9 +174,19 @@ export class HomePage {
                   setTimeout(() => {
                     counter -= 1;
                     if(counter === (total - count)){  //last index
-                      //this.geoerror = 'counter? ' + counter;
+                      this.latencyFind = new Date().getTime() - this.latencyFind;
                       this.geoerror = "sent: " + count + " files out of: " + total + " files total";
-                      this.sftp.uploadList(this.uplist, (success)=>{}, (fail)=>{});
+                      this.latencySend = new Date().getTime();
+                      this.sftp.uploadList(this.uplist, (success)=>{
+                        this.latencySend = new Date().getTime() - this.latencySend;
+
+                        //display result
+                        this.displayLatency1 = 'html:' + this.latencyHtml + 'msec';
+                        this.displayLatency2 = 'exif:' + this.latencyExif + 'msec';
+                        this.displayLatency3 = 'find:' + this.latencyFind + 'msec';
+                        this.displayLatency4 = 'sftp:' + this.latencySend + 'msec';
+
+                      }, (fail)=>{});
                     
                     }   
                   });
@@ -203,7 +225,9 @@ export class HomePage {
             Filesystem.readFile({path: filename, directory: Directory.Documents}).then((result)=>{
               //display as base64
               var str = "data:image/jpeg;base64," + result.data;
+              this.latencyHtml = new Date().getTime();
               this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(str);
+              this.latencyHtml = new Date().getTime() - this.latencyHtml;
 
               //get the target exif
               var exifObj = piexif.load(atob(result.data));
@@ -223,6 +247,7 @@ export class HomePage {
         Camera.getPhoto(options).then((image)=>{
           this.locate();
           this.base64FromPath(image.webPath).then((base64Data)=>{
+            this.latencyExif = new Date().getTime();
             var exifObj = piexif.load(base64Data);
             if(! exifObj["GPS"][piexif.GPSIFD.GPSLatitude]){
             
@@ -233,7 +258,10 @@ export class HomePage {
               var exifbytes = piexif.dump(exifObj);
               var base64Data = piexif.insert(exifbytes, base64Data) + ''; //workaround type check
             }
+            this.latencyExif = new Date().getTime() - this.latencyExif;
+            this.latencyHtml = new Date().getTime();
             this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(base64Data);
+            this.latencyHtml = new Date().getTime() - this.latencyHtml;
             
             Filesystem.writeFile({
               path: fileName,
@@ -243,7 +271,17 @@ export class HomePage {
               if(this.seamlessMode){
                 this.path = result.uri.replace('file://', '');
                 
-                this.sftp.upload('/home/nemoux/ftpclient/destination/', this.path, (good)=>{}, (bad)=>{});
+                this.latencySend = new Date().getTime();
+                this.sftp.upload('/home/nemoux/ftpclient/destination/', this.path, (good)=>{
+                  this.latencySend = new Date().getTime() - this.latencySend;
+
+                  //display result
+                  this.displayLatency1 = 'html:' + this.latencyHtml + 'msec';
+                  this.displayLatency2 = 'exif:' + this.latencyExif + 'msec';
+                  this.displayLatency3 = 'find:' + this.latencyFind + 'msec';
+                  this.displayLatency4 = 'sftp:' + this.latencySend + 'msec';
+
+                }, (bad)=>{});
                 
               }
             })
@@ -304,7 +342,6 @@ export class HomePage {
   }
   
   takePicture() {
-    
     this.takePhoto(CameraSource.Camera);
     
   }
