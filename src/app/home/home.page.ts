@@ -152,7 +152,7 @@ export class HomePage {
             Filesystem.stat({path: value, directory: Directory.Documents}).then((result)=>{
               var mtimeoff = this.mtime - result.mtime;
 
-              if(mtimeoff < 10000 && mtimeoff > -10000){  //TODO: this.mtime
+              if(mtimeoff < 300000 && mtimeoff > -300000){  //TODO: this.mtime
                 count++;
             
                 Filesystem.getUri({path:value, directory: Directory.Documents}).then((result)=>{
