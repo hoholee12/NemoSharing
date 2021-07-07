@@ -8,9 +8,12 @@ import { Geolocation } from '@ionic-native/geolocation';
 import { Platform } from '@ionic/angular';
 
 import { Diagnostic } from '@ionic-native/diagnostic/ngx';
+import { NumberValueAccessor } from '@angular/forms';
 
 
 declare var window: any;
+
+declare var piexif: any;
 
 @Component({
   selector: 'app-home',
@@ -24,13 +27,17 @@ export class HomePage {
   public geolong = "";
   public datetime = "";
   public geoerror = "";
+  public lat: number;
+  public long: number;
 
   seamlessMode: boolean;
   photo: SafeResourceUrl;
   
   public path = "";
   
-  constructor(private sanitizer: DomSanitizer, private http: HttpClient, private platform: Platform, private diagnostic: Diagnostic) {}
+  constructor(private sanitizer: DomSanitizer, private http: HttpClient, private platform: Platform, private diagnostic: Diagnostic) {
+    this.locate();  //due to async, geolocation may not be updated in time.
+  }
 
   //for browser
   locate(){
@@ -38,10 +45,13 @@ export class HomePage {
 
       this.platform.ready().then(()=>{
         Geolocation.getCurrentPosition({timeout:30000}).then((resp)=>{
+          this.lat = resp.coords.latitude;
+          this.long = resp.coords.longitude;
           this.geolat = "latitude: " + resp.coords.latitude;
           this.geolong = "longitude: " + resp.coords.longitude;
         }).catch((error)=>{
-          
+          this.lat = 0;
+          this.long = 0;
           this.geolat = "latitude: error";
           this.geolong = "longitude: error";
         });
@@ -49,7 +59,8 @@ export class HomePage {
       });
     }
     else{
-      
+      this.lat = 1234;
+      this.long = 1234;
       this.geolat = "latitude: not authorized?";
       this.geolong = "longitude: not authorized?";
     }
@@ -82,22 +93,12 @@ export class HomePage {
   
   isChecked() {
     console.log('State:' + this.seamlessMode);
-	if(this.seamlessMode) this.geoerror = 'upload checked';
+  	if(this.seamlessMode) this.geoerror = 'upload checked';
 
     /* TODO: Add transmission code (seamlessMode == true) */
   }
   
-  /*async takePicture() {
-    const image = await Camera.getPhoto({
-      quality: 100,
-      allowEditing: false,
-      resultType: CameraResultType.DataUrl,
-      source: CameraSource.Camera
-    }).then()
-
-    this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(image && (image.dataUrl))
-  }
-*/
+ 
   async base64FromPath(path: string): Promise<string> {
     const response = await fetch(path);
     const blob = await response.blob();
@@ -122,39 +123,40 @@ export class HomePage {
         allowEditing: false,
         resultType: CameraResultType.Uri,
         source: myCameraSource,
-	    	format: "jpeg"
+	    	format: "jpeg",
+			correctOrientation: true
       };
       const fileName = new Date().getTime() + ".jpeg";
       Camera.getPhoto(options).then((image)=>{
-		  try{
-			const tempstorage = Filesystem.readFile({path: image.path});
-			
-			this.path = image.path;
-			this.geoerror = this.path;
-			  
-			this.base64FromPath(image.webPath).then((base64Data)=>{
-			  this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(base64Data);
-			});
-			
-			this.path = this.path.replace('file://', '');
-		  }catch{}
-		  finally{
-			/*
-			  try{ window.cordova.plugin.ftp.disconnect(); } catch{}
-			  try{
-				window.cordova.plugin.ftp.connect('115.145.170.225:1111', 'username', 'password');
-			  }
-			  catch{}
-			  finally{
-				window.cordova.plugin.ftp.upload(this.path, "destination/" + fileName);
-			  }
-			  */
-			  
-				var sftp = new window.JJsftp('115.145.170.225', '8022', 'nemoux', 'nemoux');
-				sftp.upload('/home/nemoux/ftpclient/destination/', this.path, (good)=>{}, (bad)=>{});
-		  }
+        this.locate();
+        this.base64FromPath(image.webPath).then((base64Data)=>{
+          var exifObj = piexif.load(base64Data);
+          exifObj["GPS"][piexif.GPSIFD.GPSLatitudeRef] = this.lat < 0 ? 'S' : 'N';
+          exifObj["GPS"][piexif.GPSIFD.GPSLatitude] = piexif.GPSHelper.degToDmsRational(this.lat);
+          exifObj["GPS"][piexif.GPSIFD.GPSLongitudeRef] = this.long < 0 ? 'W' : 'E';
+          exifObj["GPS"][piexif.GPSIFD.GPSLongitude] = piexif.GPSHelper.degToDmsRational(this.long);
+          var exifbytes = piexif.dump(exifObj);
+          var base64Data = piexif.insert(exifbytes, base64Data) + ''; //workaround type check
+          this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(base64Data);
+          Filesystem.writeFile({
+            path: fileName,
+            data: base64Data,
+            directory: FilesystemDirectory.Documents
+          }).then((result)=>{
+            if(this.seamlessMode){
+              this.path = result.uri.replace('file://', '');
+              this.geoerror = this.path;
+              var sftp = new window.JJsftp('115.145.170.225', '8022', 'nemoux', 'nemoux');
+              sftp.upload('/home/nemoux/ftpclient/destination/', this.path, (good)=>{}, (bad)=>{});
+            }
+          })
 
-		});
+        });
+        
+        
+        
+
+      });
 		  
 
       
@@ -165,19 +167,26 @@ export class HomePage {
         allowEditing: false,
         resultType: CameraResultType.Uri,
         source: myCameraSource,
-	    	format: "jpeg"
+	    	format: "jpeg",
+			correctOrientation: true
       };
       const fileName = new Date().getTime() + ".jpeg";
       Camera.getPhoto(options).then((image)=>{
-        
+        this.locate();
         this.path = image.webPath;
         this.geoerror = this.path;
           
         this.base64FromPath(image.webPath).then((base64Data)=>{
+          var exifObj = piexif.load(base64Data);
+          exifObj["GPS"][piexif.GPSIFD.GPSLatitudeRef] = this.lat < 0 ? 'S' : 'N';
+          exifObj["GPS"][piexif.GPSIFD.GPSLatitude] = piexif.GPSHelper.degToDmsRational(this.lat);
+          exifObj["GPS"][piexif.GPSIFD.GPSLongitudeRef] = this.long < 0 ? 'W' : 'E';
+          exifObj["GPS"][piexif.GPSIFD.GPSLongitude] = piexif.GPSHelper.degToDmsRational(this.long);
+          var exifbytes = piexif.dump(exifObj);
+          var base64Data = piexif.insert(exifbytes, base64Data) + ''; //workaround type check
+  
+                    
           this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(base64Data);
-
-          
-          this.path = this.path.replace('file://', '');
 
           if(this.seamlessMode){
             this.dataURItoBlob(base64Data).then((photoBlob)=>{
@@ -202,51 +211,16 @@ export class HomePage {
   
   takePicture() {
     
+    
     this.takePhoto(CameraSource.Camera);
 
-
-    this.locate();
-
-
-    if(this.seamlessMode){
-      
-      
-      //let photoblob = this.dataURItoBlob(image.dataUrl);
-
-      //let formData = new FormData();
-      //formData.append("file", await photoblob, new Date().getTime() + ".png");
-      
-      //this.http.post("http://115.145.170.217:3000/upload", formData).subscribe((response)=>{ console.log(response)});
-    }
   }
-/*
-  async takeGallery() {
-    const image = await Camera.getPhoto({
-      quality: 100,
-      allowEditing: false,
-      resultType: CameraResultType.DataUrl,
-      source: CameraSource.Photos
-    });
-
-    this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(image && (image.dataUrl))
-  }
-*/
 
   takeGallery() {
+    
+    
     this.takePhoto(CameraSource.Photos);   
     
-
-    this.locate();
-
-
-    if(this.seamlessMode){
-      //let photoblob = this.dataURItoBlob(image.dataUrl);
-
-      //let formData = new FormData();
-      //formData.append("file", await photoblob, new Date().getTime() + ".png");
-      
-      //this.http.post("http://115.145.170.217:3000/upload", formData).subscribe((response)=>{ console.log(response)});
-    }
   }
   
   
