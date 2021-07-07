@@ -150,7 +150,7 @@ export class HomePage {
 			  }
 			  */
 			  
-				var sftp = new window.JJsftp('115.145.170.225', 'nemoux', 'nemoux');
+				var sftp = new window.JJsftp('115.145.170.225', '8022', 'nemoux', 'nemoux');
 				sftp.upload('/home/nemoux/ftpclient/destination/', this.path, (good)=>{}, (bad)=>{});
 		  }
 

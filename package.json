@@ -35,7 +35,7 @@
     "@ionic/pwa-elements": "^3.0.2",
     "cordova-plugin-ftp": "^1.1.1",
     "cordova-plugin-geolocation": "^4.1.0",
-    "cordova-sftp-plugin": "git+https://github.com/kgrycuk/jjdltc-cordova-plugin-sftp.git",
+    "cordova-sftp-plugin": "git+https://github.com/hoholee12/jjdltc-cordova-plugin-sftp.git",
     "cordova.plugins.diagnostic": "^6.0.3",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
