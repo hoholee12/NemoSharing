@@ -39,7 +39,7 @@ export class HomePage {
   public sftp: any;
 
   constructor(private sanitizer: DomSanitizer, private http: HttpClient, private platform: Platform, private diagnostic: Diagnostic, private fileChooser: FileChooser, private filePath: FilePath) {
-    
+    this.sftp = new window.JJsftp('115.145.170.225', '8022', 'nemoux', 'nemoux');
     this.locate();  //due to async, geolocation may not be updated in time.
   }
 
@@ -118,9 +118,11 @@ export class HomePage {
 
   batchUpload(){
     var count = 0;
-    this.sftp = new window.JJsftp('115.145.170.225', '8022', 'nemoux', 'nemoux');
+    var total = 0;
+    
     Filesystem.readdir({path: '', directory: Directory.Documents}).then((result)=>{
       result.files.forEach((value)=>{
+        total++;
         /*
         Filesystem.getUri({path:value, directory: Directory.Documents}).then((result)=>{
           this.path = result.uri.replace('file://', '');
@@ -136,14 +138,16 @@ export class HomePage {
         var latoff = Math.floor(this.lat * 10000000) - Math.floor(piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLatitude]) * 10000000);
         var longoff = Math.floor(this.long * 10000000) - Math.floor(piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLongitude]) * 10000000);
                 
-        if(latoff < 20 && latoff > -20 && longoff < 20 && longoff > -20){
+        if(latoff < 10000 && latoff > -10000 && longoff < 10000 && longoff > -10000){
           //2. photo taken in under 5 minutes
           Filesystem.stat({path: value, directory: Directory.Documents}).then((result)=>{
-            /*
-            if( result.mtime){  //TODO: this.mtime
+            var mtimeoff = this.mtime - result.mtime;
+			//this.geoerror = 'target:' + this.mtime + 'compare:' + result.mtime;
+            if(mtimeoff < 10000 && mtimeoff > -10000){  //TODO: this.mtime
               //do it!
               count++;
-              this.geoerror = "sent: " + count + " files";
+			  
+              this.geoerror = "sent: " + count + " files out of: " + total + " files total";
               Filesystem.getUri({path:value, directory: Directory.Documents}).then((result)=>{
                 this.path = result.uri.replace('file://', '');
                 
@@ -151,7 +155,7 @@ export class HomePage {
               });
               
             }
-            */
+            
           })  
         }
         
@@ -176,13 +180,23 @@ export class HomePage {
       if(myCameraSource == CameraSource.Photos){
         this.fileChooser.open().then((url)=>{
           this.filePath.resolveNativePath(url).then((fpath)=>{
-            this.path = fpath.split('\\').pop().split('/').pop(); //filename only
-            this.geoerror = 'filename:' + this.path;
-            Filesystem.readFile({path: this.path, directory: Directory.Documents}).then((result)=>{
+            var filename = fpath.split('\\').pop().split('/').pop(); //filename only
+            this.geoerror = 'filename:' + filename;
+            Filesystem.readFile({path: filename, directory: Directory.Documents}).then((result)=>{
+              //display as base64
               var str = "data:image/jpeg;base64," + result.data;
-			        this.geoerror = str;
               this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(str);
+
+              //get the target exif
+              var exifObj = piexif.load(atob(result.data));
+              this.lat = piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLatitude]);
+              this.long = piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLongitude]);
+              Filesystem.stat({path: filename, directory: Directory.Documents}).then((result)=>{
+                this.mtime = result.mtime;
+                this.batchUpload(); //premigration
+              })
             })
+            
           })
         })
       }
@@ -202,6 +216,7 @@ export class HomePage {
               var base64Data = piexif.insert(exifbytes, base64Data) + ''; //workaround type check
             }
             this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(base64Data);
+            
             Filesystem.writeFile({
               path: fileName,
               data: base64Data,
@@ -209,8 +224,7 @@ export class HomePage {
             }).then((result)=>{
               if(this.seamlessMode){
                 this.path = result.uri.replace('file://', '');
-                this.geoerror = this.path;
-                this.sftp = new window.JJsftp('115.145.170.225', '8022', 'nemoux', 'nemoux');
+                
                 this.sftp.upload('/home/nemoux/ftpclient/destination/', this.path, (good)=>{}, (bad)=>{});
                 
               }
@@ -249,7 +263,7 @@ export class HomePage {
             var base64Data = piexif.insert(exifbytes, base64Data) + ''; //workaround type check
           }
           this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(base64Data);
-
+          this.geoerror = 'this is it' + base64Data;
           if(this.seamlessMode){
             this.dataURItoBlob(base64Data).then((photoBlob)=>{
 
