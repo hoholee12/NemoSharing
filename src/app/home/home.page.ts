@@ -42,19 +42,19 @@ export class HomePage {
   //for browser
   locate(){
     if(this.diagnostic.isLocationAuthorized() && this.diagnostic.isLocationAvailable()){
-
+      this.lat = 0;
+      this.long = 0;
+      this.geolat = "latitude: 0";
+      this.geolong = "longitude: 0";
+      
       this.platform.ready().then(()=>{
-        Geolocation.getCurrentPosition({timeout:30000}).then((resp)=>{
-          this.lat = resp.coords.latitude;
-          this.long = resp.coords.longitude;
-          this.geolat = "latitude: " + resp.coords.latitude;
-          this.geolong = "longitude: " + resp.coords.longitude;
-        }).catch((error)=>{
-          this.lat = 0;
-          this.long = 0;
-          this.geolat = "latitude: error";
-          this.geolong = "longitude: error";
+        Geolocation.watchPosition({enableHighAccuracy: true}).subscribe((pos)=>{
+          this.lat = pos.coords.latitude;
+          this.long = pos.coords.longitude;
+          this.geolat = "latitude: " + pos.coords.latitude;
+          this.geolong = "longitude: " + pos.coords.longitude;
         });
+          
         this.datetime = new Date().toDateString();  
       });
     }
@@ -128,7 +128,7 @@ export class HomePage {
       };
       const fileName = new Date().getTime() + ".jpeg";
       Camera.getPhoto(options).then((image)=>{
-        this.locate();
+        
         this.base64FromPath(image.webPath).then((base64Data)=>{
           var exifObj = piexif.load(base64Data);
           exifObj["GPS"][piexif.GPSIFD.GPSLatitudeRef] = this.lat < 0 ? 'S' : 'N';
