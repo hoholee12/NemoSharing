@@ -116,54 +116,72 @@ export class HomePage {
     });
   }
 
+  delay(ms: number) {
+    return new Promise( resolve => setTimeout(resolve, ms) );
+  }
+
+  
+  public uplist:{remote: string, local: string}[] = [];
   batchUpload(){
     var count = 0;
     var total = 0;
     
+  
     Filesystem.readdir({path: '', directory: Directory.Documents}).then((result)=>{
-      result.files.forEach((value)=>{
+      this.uplist = [];
+      
+      var counter = result.files.length;
+      result.files.forEach((value, idx)=>{
         total++;
-        /*
-        Filesystem.getUri({path:value, directory: Directory.Documents}).then((result)=>{
-          this.path = result.uri.replace('file://', '');
+          /*
+          Filesystem.getUri({path:value, directory: Directory.Documents}).then((result)=>{
+            this.path = result.uri.replace('file://', '');
+            
+          })
+          */
+        Filesystem.readFile({path: value, directory: Directory.Documents}).then((result)=>{
+          
+          var exifObj = piexif.load(atob(result.data));
+                  
+          //1. photo taken in range of 0.0000005 lat/long
+          var latoff = Math.floor(this.lat * 10000000) - Math.floor(piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLatitude]) * 10000000);
+          var longoff = Math.floor(this.long * 10000000) - Math.floor(piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLongitude]) * 10000000);
+                  
+          if(latoff < 10000 && latoff > -10000 && longoff < 10000 && longoff > -10000){
+            //2. photo taken in under 5 minutes
+            Filesystem.stat({path: value, directory: Directory.Documents}).then((result)=>{
+              var mtimeoff = this.mtime - result.mtime;
+
+              if(mtimeoff < 10000 && mtimeoff > -10000){  //TODO: this.mtime
+                count++;
+            
+                Filesystem.getUri({path:value, directory: Directory.Documents}).then((result)=>{
+                  this.path = result.uri.replace('file://', '');
+                  this.uplist.push({remote: '/home/nemoux/ftpclient/destination/', local: this.path});
+                  
+                  setTimeout(() => {
+                    counter -= 1;
+                    if(counter === (total - count)){  //last index
+                      //this.geoerror = 'counter? ' + counter;
+                      this.geoerror = "sent: " + count + " files out of: " + total + " files total";
+                      this.sftp.uploadList(this.uplist, (success)=>{}, (fail)=>{});
+                    
+                    }   
+                  });
+                  
+                  
+                })
+                
+              }
+              
+            })  
+          }
           
         })
-        */
-        
-       Filesystem.readFile({path: value, directory: Directory.Documents}).then((result)=>{
-        
-        var exifObj = piexif.load(atob(result.data));
-                
-        //1. photo taken in range of 0.0000005 lat/long
-        var latoff = Math.floor(this.lat * 10000000) - Math.floor(piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLatitude]) * 10000000);
-        var longoff = Math.floor(this.long * 10000000) - Math.floor(piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLongitude]) * 10000000);
-                
-        if(latoff < 10000 && latoff > -10000 && longoff < 10000 && longoff > -10000){
-          //2. photo taken in under 5 minutes
-          Filesystem.stat({path: value, directory: Directory.Documents}).then((result)=>{
-            var mtimeoff = this.mtime - result.mtime;
-			//this.geoerror = 'target:' + this.mtime + 'compare:' + result.mtime;
-            if(mtimeoff < 10000 && mtimeoff > -10000){  //TODO: this.mtime
-              //do it!
-              count++;
-			  
-              this.geoerror = "sent: " + count + " files out of: " + total + " files total";
-              Filesystem.getUri({path:value, directory: Directory.Documents}).then((result)=>{
-                this.path = result.uri.replace('file://', '');
-                
-                this.sftp.upload('/home/nemoux/ftpclient/destination/', this.path, (good)=>{}, (bad)=>{});
-              });
-              
-            }
-            
-          })  
-        }
-        
-       })
-        
-        
+         
       })
     })
+    
     
   }
 
