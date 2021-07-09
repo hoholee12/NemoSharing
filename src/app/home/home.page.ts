@@ -55,7 +55,7 @@ export class HomePage {
   public sftp: any;
 
   constructor(private sanitizer: DomSanitizer, private http: HttpClient, private platform: Platform, private diagnostic: Diagnostic, private fileChooser: FileChooser, private filePath: FilePath) {
-    this.sftp = new window.JJsftp('115.145.170.225', '8022', 'nemoux', 'nemoux');
+    
     this.locate();  //due to async, geolocation may not be updated in time.
   }
 
@@ -71,7 +71,7 @@ export class HomePage {
           this.geolong = "longitude: " + pos.coords.longitude;
         });
 
-        this.datetime = new Date().toDateString();  
+        this.updatedatetime();
       });
     }
     else{
@@ -80,6 +80,11 @@ export class HomePage {
       this.geolat = "latitude: not authorized?";
       this.geolong = "longitude: not authorized?";
     }
+  }
+
+  updatedatetime(){
+    var date = new Date();
+    this.datetime = date.getFullYear() + ':' + ('0' + date.getMonth()).slice(-2) + ':' + ('0' + date.getDay()).slice(-2) + ' ' + ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2) + ':' + ('0' + date.getDay()).slice(-2);
   }
 
   async dataURItoBlob(dataURI) {
@@ -162,62 +167,68 @@ export class HomePage {
           //1. photo taken in range of 0.0000005 lat/long
           var latoff = Math.floor(this.lat * 10000000) - Math.floor(piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLatitude]) * 10000000);
           var longoff = Math.floor(this.long * 10000000) - Math.floor(piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLongitude]) * 10000000);
-          
+          var parsetime:string = exifObj["GPS"][piexif.GPSIFD.GPSDateStamp];
+          var resultmtime = 
+            parseInt(parsetime.split(' ')[0].split(':')[0]) * 365 * 31 * 24 * 60  +
+            parseInt(parsetime.split(' ')[0].split(':')[1]) * 31 * 24 * 60 +
+            parseInt(parsetime.split(' ')[0].split(':')[2]) * 24 * 60 +
+            parseInt(parsetime.split(' ')[1].split(':')[0]) * 60 +
+            parseInt(parsetime.split(' ')[1].split(':')[1]);
+
           if(latoff < 10000 && latoff > -10000 && longoff < 10000 && longoff > -10000){
             //2. photo taken in under 5 minutes
-            Filesystem.stat({path: value, directory: Directory.Documents}).then((result)=>{
-              var mtimeoff = this.mtime - result.mtime;
+            var mtimeoff = this.mtime - resultmtime;
 
-              if(mtimeoff < 300000 && mtimeoff > -300000){  //TODO: this.mtime
-                count++;
-            
-                Filesystem.getUri({path:value, directory: Directory.Documents}).then((result)=>{
-                  this.path = result.uri.replace('file://', '');
-                  this.uplist.push({remote: '/home/nemoux/ftpclient/destination/', local: this.path});
-                  
-                  setTimeout(() => {
-                    counter -= 1;
-                    if(counter === (total - count)){  //last index
-                      
-                      this.geoerror = "sent: " + count + " files out of: " + total + " files total";
+            if(mtimeoff < 5 && mtimeoff > -5){  //TODO: this.mtime
+              count++;
+          
+              Filesystem.getUri({path:value, directory: Directory.Documents}).then((result)=>{
+                this.path = result.uri.replace('file://', '');
+                this.uplist.push({remote: '/home/nemoux/ftpclient/destination/', local: this.path});
+                
+                setTimeout(() => {
+                  counter -= 1;
+                  if(counter === (total - count)){  //last index
+                    
+                    this.geoerror = "sent: " + count + " files out of: " + total + " files total";
+                    
+                    //send data================================
+                    this.latencySend = new Date().getTime();
+                    //=========================================
+
+                    this.sftp = new window.JJsftp('115.145.170.225', '8022', 'nemoux', 'nemoux');
+                    this.sftp.uploadList(this.uplist, (success)=>{
                       
                       //send data================================
-                      this.latencySend = new Date().getTime();
+                      this.latencySend = new Date().getTime() - this.latencySend;
                       //=========================================
 
-                      this.sftp.uploadList(this.uplist, (success)=>{
-                        
-                        //send data================================
-                        this.latencySend = new Date().getTime() - this.latencySend;
-                        //=========================================
-
-                        
-                        //batch upload latency=====================
-                        this.latencyBatch = new Date().getTime() - this.latencyBatch;
-                        //=========================================
-                        
-                        //display result===========================
-                        this.displayLatency1 = 'html:' + this.latencyHtml + 'msec';
-                        this.displayLatency2 = 'exif:' + this.latencyExif + 'msec';
-                        this.displayLatency3 = 'mdate:' + this.latencyMdate + 'msec';
-                        this.displayLatency4 = 'decode:' + this.latencyDecode + 'msec';
-                        this.displayLatency5 = 'sftp:' + this.latencySend + 'msec';
-                        this.displayLatency6 = 'batch:' + this.latencyBatch + 'msec';
-                        //=========================================
-                      }, (fail)=>{
+                      
+                      //batch upload latency=====================
+                      this.latencyBatch = new Date().getTime() - this.latencyBatch;
+                      //=========================================
+                      
+                      //display result===========================
+                      this.displayLatency1 = 'html:' + this.latencyHtml + 'msec';
+                      this.displayLatency2 = 'exif:' + this.latencyExif + 'msec';
+                      this.displayLatency3 = 'decode:' + this.latencyDecode + 'msec';
+                      this.displayLatency4 = 'sftp:' + this.latencySend + 'msec';
+                      this.displayLatency5 = 'batch:' + this.latencyBatch + 'msec';
+                      //=========================================
+                    }, (fail)=>{
 
 
-                      });
-                    
-                    }   
-                  });
+                    });
                   
-                  
-                })
+                  }   
+                });
                 
-              }
+                
+              })
               
-            })  
+            }
+            
+
           }
           
         })
@@ -277,24 +288,19 @@ export class HomePage {
               var exifObj = piexif.load(convertedData);
               this.lat = piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLatitude]);
               this.long = piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLongitude]);
+              var parsetime:string = exifObj["GPS"][piexif.GPSIFD.GPSDateStamp];
+              this.mtime = 
+                parseInt(parsetime.split(' ')[0].split(':')[0]) * 365 * 31 * 24 * 60  +
+                parseInt(parsetime.split(' ')[0].split(':')[1]) * 31 * 24 * 60 +
+                parseInt(parsetime.split(' ')[0].split(':')[2]) * 24 * 60 +
+                parseInt(parsetime.split(' ')[1].split(':')[0]) * 60 +
+                parseInt(parsetime.split(' ')[1].split(':')[1]);
               //parsing exif from data===================
               this.latencyExif = new Date().getTime() - this.latencyExif;
               //=========================================
-
-
               
-              //get modified time from filesystem========
-              this.latencyMdate = new Date().getTime();
-              //=========================================
-              Filesystem.stat({path: filename, directory: Directory.Documents}).then((result)=>{
-                this.mtime = result.mtime;
-                
-                //get modified time from filesystem========
-                this.latencyMdate = new Date().getTime() - this.latencyMdate;
-                //=========================================
+              this.batchUpload(); //premigration
 
-                this.batchUpload(); //premigration
-              })
             })
             
           })
@@ -332,6 +338,7 @@ export class HomePage {
               exifObj["GPS"][piexif.GPSIFD.GPSLatitude] = piexif.GPSHelper.degToDmsRational(this.lat);
               exifObj["GPS"][piexif.GPSIFD.GPSLongitudeRef] = this.long < 0 ? 'W' : 'E';
               exifObj["GPS"][piexif.GPSIFD.GPSLongitude] = piexif.GPSHelper.degToDmsRational(this.long);
+              exifObj["GPS"][piexif.GPSIFD.GPSDateStamp] = this.datetime;
               var exifbytes = piexif.dump(exifObj);
               var base64Data = piexif.insert(exifbytes, base64Data) + ''; //workaround type check
             }
@@ -361,6 +368,7 @@ export class HomePage {
                 this.latencySend = new Date().getTime();
                 //=========================================
 
+                this.sftp = new window.JJsftp('115.145.170.225', '8022', 'nemoux', 'nemoux');
                 this.sftp.upload('/home/nemoux/ftpclient/destination/', this.path, (good)=>{
                   
                   //send data================================
@@ -457,12 +465,14 @@ export class HomePage {
   }
 
   takePicture() {
+    this.updatedatetime();
     this.initlatencycheck();
     this.takePhoto(CameraSource.Camera);
     
   }
 
   takeGallery() {
+    this.updatedatetime();
     this.initlatencycheck();
     this.takePhoto(CameraSource.Photos);
     
