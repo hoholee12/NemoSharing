@@ -41,9 +41,8 @@ export class HomePage {
   public latencyHtml: number;
   public latencyExif: number;
   public latencyTofile: number;
-  public latencyMdate: number;
+  public latencyFromfile: number;
   public latencyDecode: number;
-  public latencySend: number;
   public latencyBatch: number;
   public latencySingle: number;
 
@@ -146,8 +145,11 @@ export class HomePage {
   batchUpload(){
     var count = 0;
     var total = 0;
-    
+
+    var dirlatency = new Date().getTime();  //dir latency
     Filesystem.readdir({path: '', directory: Directory.Documents}).then((result)=>{
+      dirlatency = new Date().getTime() - dirlatency; //dir latency
+
       this.uplist = [];
       
       var counter = result.files.length;
@@ -160,9 +162,25 @@ export class HomePage {
             
           })
           */
+
+        var filelatency = new Date().getTime(); //file latency
         Filesystem.readFile({path: value, directory: Directory.Documents}).then((result)=>{
+          filelatency = new Date().getTime() - filelatency; //file latency
+          if(this.latencyFromfile > filelatency) this.latencyFromfile = filelatency;
           
-          var exifObj = piexif.load(atob(result.data));
+          //get the target exif
+          //base64 to binary conversion==============
+          this.latencyDecode = new Date().getTime();
+          //=========================================
+          var convertedData = atob(result.data);
+          //base64 to binary conversion==============
+          this.latencyDecode = new Date().getTime() - this.latencyDecode;
+          //=========================================
+
+          //parsing exif from data===================
+          this.latencyExif = new Date().getTime();
+          //=========================================
+          var exifObj = piexif.load(convertedData);
 
           //1. photo taken in range of 0.0000005 lat/long
           var latoff = Math.floor(this.lat * 10000000) - Math.floor(piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLatitude]) * 10000000);
@@ -174,6 +192,9 @@ export class HomePage {
             parseInt(parsetime.split(' ')[0].split(':')[2]) * 24 * 60 +
             parseInt(parsetime.split(' ')[1].split(':')[0]) * 60 +
             parseInt(parsetime.split(' ')[1].split(':')[1]);
+          //parsing exif from data===================
+          this.latencyExif = new Date().getTime() - this.latencyExif;
+          //=========================================
 
           if(latoff < 10000 && latoff > -10000 && longoff < 10000 && longoff > -10000){
             //2. photo taken in under 5 minutes
@@ -184,36 +205,30 @@ export class HomePage {
           
               Filesystem.getUri({path:value, directory: Directory.Documents}).then((result)=>{
                 this.path = result.uri.replace('file://', '');
-                this.uplist.push({remote: '/home/nemoux/ftpclient/destination/', local: this.path});
+                this.uplist.push({remote: '/opt/contents/default/media/pct/news/', local: this.path});
                 
                 setTimeout(() => {
                   counter -= 1;
                   if(counter === (total - count)){  //last index
                     
                     this.geoerror = "sent: " + count + " files out of: " + total + " files total";
+
                     
-                    //send data================================
-                    this.latencySend = new Date().getTime();
+                    //batch upload latency=====================
+                    this.latencyBatch = new Date().getTime() - this.latencyBatch;
                     //=========================================
 
+                    
                     this.sftp = new window.JJsftp('115.145.170.225', '8022', 'nemoux', 'nemoux');
                     this.sftp.uploadList(this.uplist, (success)=>{
                       
-                      //send data================================
-                      this.latencySend = new Date().getTime() - this.latencySend;
-                      //=========================================
-
-                      
-                      //batch upload latency=====================
-                      this.latencyBatch = new Date().getTime() - this.latencyBatch;
-                      //=========================================
-                      
                       //display result===========================
                       this.displayLatency1 = 'html:' + this.latencyHtml + 'msec';
-                      this.displayLatency2 = 'exif:' + this.latencyExif + 'msec';
-                      this.displayLatency3 = 'decode:' + this.latencyDecode + 'msec';
-                      this.displayLatency4 = 'sftp:' + this.latencySend + 'msec';
-                      this.displayLatency5 = 'batch:' + this.latencyBatch + 'msec';
+                      this.displayLatency2 = 'readdir:' + dirlatency + 'msec';
+                      this.displayLatency3 = 'readfile:' + this.latencyFromfile + 'msec';
+                      this.displayLatency4 = 'exif:' + this.latencyExif + 'msec';
+                      this.displayLatency5 = 'decode:' + this.latencyDecode + 'msec';
+                      this.displayLatency6 = 'batch:' + this.latencyBatch + 'msec';
                       //=========================================
                     }, (fail)=>{
 
@@ -251,19 +266,25 @@ export class HomePage {
       };
       if(myCameraSource == CameraSource.Photos){
         this.fileChooser.open().then((url)=>{
+          //batch upload latency=====================
+          this.latencyBatch = new Date().getTime();
+          //=========================================
           this.filePath.resolveNativePath(url).then((fpath)=>{
             var filename = fpath.split('\\').pop().split('/').pop(); //filename only
             this.geoerror = 'filename:' + filename;
 
-            //batch upload latency=====================
-            this.latencyBatch = new Date().getTime();
-            //=========================================
-
             //from reading data to html================
             this.latencyHtml = new Date().getTime();
             //=========================================
+            //read from storage========================
+            this.latencyFromfile = new Date().getTime();
+            //=========================================
 
             Filesystem.readFile({path: filename, directory: Directory.Documents}).then((result)=>{
+              //read from storage========================
+              this.latencyFromfile = new Date().getTime() - this.latencyFromfile;
+              //=========================================
+
               //display as base64
               var str = "data:image/jpeg;base64," + result.data;
               this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(str);
@@ -363,28 +384,20 @@ export class HomePage {
 
               if(this.seamlessMode){
                 this.path = result.uri.replace('file://', '');
+
                 
-                //send data================================
-                this.latencySend = new Date().getTime();
+                //single upload latency=====================
+                this.latencySingle = new Date().getTime() - this.latencySingle;
                 //=========================================
 
                 this.sftp = new window.JJsftp('115.145.170.225', '8022', 'nemoux', 'nemoux');
-                this.sftp.upload('/home/nemoux/ftpclient/destination/', this.path, (good)=>{
+                this.sftp.upload('/opt/contents/default/media/pct/news/', this.path, (good)=>{
                   
-                  //send data================================
-                  this.latencySend = new Date().getTime() - this.latencySend;
-                  //=========================================
-
-                  //single upload latency=====================
-                  this.latencySingle = new Date().getTime() - this.latencySingle;
-                  //=========================================
-
                   //display result===========================
                   this.displayLatency1 = 'html:' + this.latencyHtml + 'msec';
                   this.displayLatency2 = 'exif:' + this.latencyExif + 'msec';
                   this.displayLatency3 = 'persist:' + this.latencyTofile + 'msec';
-                  this.displayLatency4 = 'sftp:' + this.latencySend + 'msec';
-                  this.displayLatency5 = 'single:' + this.latencySingle + 'msec';
+                  this.displayLatency4 = 'single:' + this.latencySingle + 'msec';
                   //=========================================
 
                 }, (bad)=>{});
@@ -451,7 +464,7 @@ export class HomePage {
     this.latencyHtml = -1;
     this.latencyExif = -1;
     this.latencyTofile = -1;
-    this.latencySend = -1;
+    this.latencyFromfile = -1;
     this.latencyBatch = -1;
     this.latencySingle = -1;
     this.geoerror = "";
