@@ -36,8 +36,13 @@ export class HomePage {
   public displayLatency2 = '';
   public displayLatency3 = '';
   public displayLatency4 = '';
+  public displayLatency5 = '';
+  public displayLatency6 = '';
   public latencyHtml: number;
   public latencyExif: number;
+  public latencyTofile: number;
+  public latencyMdate: number;
+  public latencyDecode: number;
   public latencySend: number;
   public latencyBatch: number;
   public latencySingle: number;
@@ -194,10 +199,15 @@ export class HomePage {
                         //display result===========================
                         this.displayLatency1 = 'html:' + this.latencyHtml + 'msec';
                         this.displayLatency2 = 'exif:' + this.latencyExif + 'msec';
-                        this.displayLatency3 = 'sftp:' + this.latencySend + 'msec';
-                        this.displayLatency4 = 'batch:' + this.latencyBatch + 'msec';
+                        this.displayLatency3 = 'mdate:' + this.latencyMdate + 'msec';
+                        this.displayLatency4 = 'decode:' + this.latencyDecode + 'msec';
+                        this.displayLatency5 = 'sftp:' + this.latencySend + 'msec';
+                        this.displayLatency6 = 'batch:' + this.latencyBatch + 'msec';
                         //=========================================
-                      }, (fail)=>{});
+                      }, (fail)=>{
+
+
+                      });
                     
                     }   
                   });
@@ -252,22 +262,37 @@ export class HomePage {
               //=========================================
 
               
+              //get the target exif
+              //base64 to binary conversion==============
+              this.latencyDecode = new Date().getTime();
+              //=========================================
+              var convertedData = atob(result.data);
+              //base64 to binary conversion==============
+              this.latencyDecode = new Date().getTime() - this.latencyDecode;
+              //=========================================
+
               //parsing exif from data===================
               this.latencyExif = new Date().getTime();
               //=========================================
-              
-              //get the target exif
-              var exifObj = piexif.load(atob(result.data));
+              var exifObj = piexif.load(convertedData);
               this.lat = piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLatitude]);
               this.long = piexif.GPSHelper.dmsRationalToDeg(exifObj["GPS"][piexif.GPSIFD.GPSLongitude]);
+              //parsing exif from data===================
+              this.latencyExif = new Date().getTime() - this.latencyExif;
+              //=========================================
 
+
+              
+              //get modified time from filesystem========
+              this.latencyMdate = new Date().getTime();
+              //=========================================
               Filesystem.stat({path: filename, directory: Directory.Documents}).then((result)=>{
                 this.mtime = result.mtime;
                 
-                //parsing exif from data===================
-                this.latencyExif = new Date().getTime() - this.latencyExif;
+                //get modified time from filesystem========
+                this.latencyMdate = new Date().getTime() - this.latencyMdate;
                 //=========================================
-                
+
                 this.batchUpload(); //premigration
               })
             })
@@ -315,11 +340,20 @@ export class HomePage {
             this.latencyExif = new Date().getTime() - this.latencyExif;
             //=========================================
             
+            //write to storage=========================
+            this.latencyTofile = new Date().getTime();
+            //=========================================
+
             Filesystem.writeFile({
               path: fileName,
               data: base64Data,
               directory: Directory.Documents
             }).then((result)=>{
+              
+              //write to storage=========================
+              this.latencyTofile = new Date().getTime() - this.latencyTofile;
+              //=========================================
+
               if(this.seamlessMode){
                 this.path = result.uri.replace('file://', '');
                 
@@ -340,8 +374,9 @@ export class HomePage {
                   //display result===========================
                   this.displayLatency1 = 'html:' + this.latencyHtml + 'msec';
                   this.displayLatency2 = 'exif:' + this.latencyExif + 'msec';
-                  this.displayLatency3 = 'sftp:' + this.latencySend + 'msec';
-                  this.displayLatency4 = 'single:' + this.latencySingle + 'msec';
+                  this.displayLatency3 = 'persist:' + this.latencyTofile + 'msec';
+                  this.displayLatency4 = 'sftp:' + this.latencySend + 'msec';
+                  this.displayLatency5 = 'single:' + this.latencySingle + 'msec';
                   //=========================================
 
                 }, (bad)=>{});
@@ -403,25 +438,32 @@ export class HomePage {
             
     }
   }
-  
-  takePicture() {
+
+  initlatencycheck(){
     this.latencyHtml = -1;
     this.latencyExif = -1;
+    this.latencyTofile = -1;
     this.latencySend = -1;
     this.latencyBatch = -1;
     this.latencySingle = -1;
     this.geoerror = "";
+    this.displayLatency1 = '';
+    this.displayLatency2 = '';
+    this.displayLatency3 = '';
+    this.displayLatency4 = '';
+    this.displayLatency5 = '';
+    this.displayLatency6 = '';
+    
+  }
+
+  takePicture() {
+    this.initlatencycheck();
     this.takePhoto(CameraSource.Camera);
     
   }
 
   takeGallery() {
-    this.latencyHtml = -1;
-    this.latencyExif = -1;
-    this.latencySend = -1;
-    this.latencyBatch = -1;
-    this.latencySingle = -1;
-    this.geoerror = "";
+    this.initlatencycheck();
     this.takePhoto(CameraSource.Photos);
     
   }
