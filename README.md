@@ -10,27 +10,7 @@ Ionic -v 6.16.2
 
 NPX -v 6.14.13
 
-## Installation & Bluild & Running
-
-Using Browser:
-
-```
-$ npm install -g @ionic/cli
-$ npm install -g @angular/core
-$ npm install -g @capacitor/core
-$ npm install -g @capacitor/camera
-$ npm install -g @angular/platform-browser
-$ cd NemoSeamless-demo
-$ ionic integrations enable capacitor
-$ npx cap init
-$ ionic build
-$ npx cap add android
-$ npm install @ionic/pwa-elements
-$ ionic build
-$ npx cap sync
-$ ionic serve --external
-```
-
+## Installation & Build & Running
 
 Using Android:
 
@@ -41,18 +21,16 @@ $ npm install -g @angular/core
 $ npm install -g @capacitor/core
 $ npm install -g @capacitor/camera
 $ npm install -g @angular/platform-browser
-$ cd NemoSeamless-demo
-$ ionic integrations enable capacitor
-$ npx cap init
-$ ionic build
-$ npx cap add android
-$ npm install @ionic/pwa-elements
+$ cd NemoSharing
+$ npm install
+$ npm uninstall @ionic-native/geolocation --save
+$ npm install @ionic-native/geolocation@5.27.0 --save
 $ ionic build
 $ npx cap sync
 $ npx cap open android
 ```
 
-2. Allow Permission in `menifest.xml`
+2. Allow Permission in `manifest.xml`
 ```
 <!-- Permissions -->
 
