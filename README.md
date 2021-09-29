@@ -50,7 +50,7 @@ $ npx cap open android
 ```
 
 ### sftpserver
-sftpserver is a server-side application that provide the client with sftp connection, and automatically launch the image viewer.
+sftpserver is a server-side application that connects to the client with sftp protocol, and launches image viewer for any image files that have been transferred through said connection.
 
 ## Contact Information
 
