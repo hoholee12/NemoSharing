@@ -6,7 +6,6 @@ This work was supported by Institute of Information & communications Technology 
  - NPM -v 6.14.13
  - Ionic -v 6.16.2
  - NPX -v 6.14.13
----
 
 ## Installation & Build & Running
 
@@ -50,7 +49,6 @@ $ npx cap open android
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
 ```
 
----
 ## Contact
 
 Please contact us at <ins>`hoholee12@naver.com`</ins> with any questions.
