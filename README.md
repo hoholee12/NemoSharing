@@ -52,4 +52,4 @@ $ npx cap open android
 ---
 ## Contact
 
-Please contact us at `hoholee12@naver.com` with any questions.
+Please contact us at <ins>`hoholee12@naver.com`</ins> with any questions.
