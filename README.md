@@ -11,7 +11,7 @@ This work was supported by Institute of Information & communications Technology 
 
 ### Android:
 
-1. Build Web Application
+1. Build the web application
 ```
 $ npm install -g @ionic/cli
 $ npm install -g @angular/core
@@ -27,7 +27,7 @@ $ npx cap sync
 $ npx cap open android
 ```
 
-2. Allow Permission in `manifest.xml`
+2. Allow the following permissions in `manifest.xml`
 ```
 <!-- Permissions -->
 
