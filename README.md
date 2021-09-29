@@ -49,6 +49,6 @@ $ npx cap open android
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
 ```
 
-## Contact
+## Contact Information
 
 Please contact us at <ins>`hoholee12@naver.com`</ins> with any questions.
