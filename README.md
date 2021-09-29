@@ -49,6 +49,9 @@ $ npx cap open android
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
 ```
 
+### sftpserver
+sftpserver is a server-side application that provide the client with sftp connection, and automatically launch the image viewer.
+
 ## Contact Information
 
 Please contact us at <ins>`hoholee12@naver.com`</ins> with any questions.
