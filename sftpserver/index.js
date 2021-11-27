@@ -5,9 +5,11 @@ var SFTPServer = require("node-sftp-server");
 const { exec } = require('child_process');
 var srv = new SFTPServer();
 
+//listen
 srv.listen(8022);
 console.log("listening on 8022...");
 
+//connect to client
 srv.on("connect", function (auth, info) {
   if (auth.method !== 'password' || auth.username !== "nemoux" || auth.password !== "nemoux") {
     return auth.reject(['password'], false);
@@ -15,7 +17,9 @@ srv.on("connect", function (auth, info) {
   var username = auth.username;
   var password = auth.password;
 
+  //accept client
   return auth.accept(function (session) {
+    //override writefile
     return session.on("writefile", function (path, readstream) {
       var writestream;
       var filename = path + new Date().getTime() + '.jpeg';
