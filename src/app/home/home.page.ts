@@ -11,8 +11,8 @@ import { Diagnostic } from '@ionic-native/diagnostic/ngx';
 import { FileChooser } from '@ionic-native/file-chooser/ngx';
 import { FilePath } from '@ionic-native/file-path/ngx';
 
+//for cordova plugins. 
 declare var window: any;
-
 declare var piexif: any;
 
 @Component({
