@@ -1,11 +1,8 @@
 "use strict";
 
 var fs = require('fs');
-
 var SFTPServer = require("node-sftp-server");
-
 const { exec } = require('child_process');
-
 var srv = new SFTPServer();
 
 srv.listen(8022);
