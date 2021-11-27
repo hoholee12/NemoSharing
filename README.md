@@ -53,5 +53,4 @@ $ npx cap open android
 sftpserver is a server-side component that communicates with the client using the sftp protocol and launches an image viewer for any image files that have been transferred through the established connection.
 
 ## Contact Information
-
 Please contact us at <ins>`hoholee12@naver.com`</ins> with any questions.
