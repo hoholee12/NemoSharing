@@ -4,14 +4,14 @@
 var fs = require('fs');
 var SFTPServer = require("node-sftp-server");
 const { exec } = require('child_process');
-var srv = new SFTPServer();
+var nemosftpsrv = new SFTPServer();
 
 //listen
-srv.listen(8022);
+nemosftpsrv.listen(8022);
 console.log("listening on 8022...");
 
 //connect to client
-srv.on("connect", function (auth, info) {
+nemosftpsrv.on("connect", function (auth, info) {
   //reject if its not a connection from client..
   if (auth.method !== 'password' || auth.username !== "nemoux" || auth.password !== "nemoux") {
     return auth.reject(['password'], false);
