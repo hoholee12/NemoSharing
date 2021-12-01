@@ -60,7 +60,8 @@ export class HomePage {
   }
 
 
-  //for browser
+  //for browser(deprecated)
+  //use with ssl disabled.
   locate(){
     if(this.diagnostic.isLocationAuthorized() && this.diagnostic.isLocationAvailable()){
        this.platform.ready().then(()=>{
