@@ -55,5 +55,7 @@ sftpserver is a server-side component that communicates with the client using th
 Run sftpserver by:
 ```sudo node index.js```
 
+The sftpserver program is designed to run only on the NEMOUX platform. Other platforms will not work!
+
 ## Contact Information
 Please contact us at <ins>`hoholee12@gmail.com`</ins> with any questions.
