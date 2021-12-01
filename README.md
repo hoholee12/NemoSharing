@@ -56,4 +56,4 @@ Run sftpserver by:
 ```sudo node index.js```
 
 ## Contact Information
-Please contact us at <ins>`hoholee12@naver.com`</ins> with any questions.
+Please contact us at <ins>`hoholee12@gmail.com`</ins> with any questions.
