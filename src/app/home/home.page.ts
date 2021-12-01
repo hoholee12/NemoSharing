@@ -1,4 +1,3 @@
-// 
 import { Component, ɵSafeResourceUrl } from '@angular/core';
 import { Capacitor, Plugins } from '@capacitor/core';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
