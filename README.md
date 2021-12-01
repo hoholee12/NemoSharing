@@ -50,7 +50,7 @@ $ npx cap open android
 ```
 
 ### sftpserver
-sftpserver is a server-side component that communicates with the client using the sftp protocol and launches an image viewer for any image files that have been transferred through the established connection.
+sftpserver is a server-side component that communicates with the client using the sftp protocol and launch an image viewer for any image files that have been transferred through the established connection.
 
 Run sftpserver by:
 ```sudo node index.js```
