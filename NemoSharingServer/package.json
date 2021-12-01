@@ -1,0 +1,15 @@
+{
+  "name": "sftpserver",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "node-sftp-server": "git+https://github.com/hoholee12/node-sftp-server.git",
+    "npm": "^6.14.13"
+  }
+}
