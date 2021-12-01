@@ -49,13 +49,15 @@ $ npx cap open android
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
 ```
 
-### sftpserver
-sftpserver is a server-side component that communicates with the client using the sftp protocol and launch an image viewer for any image files that have been transferred through the established connection.
+### NemoSharing_Server
+NemoSharing_Server is a server-side component that communicates with the client using the sftp protocol and launch an image viewer for any image files that have been transferred through the established connection.
 
-Run sftpserver by:
-```sudo node index.js```
-
-The sftpserver program is designed to run only on the NEMOUX platform. Other platforms will not work!
+Run NemoSharing_Server by:
+```
+cd NemoSharing_Server
+sudo node index.js
+```
+The NemoSharing_Server program is designed to run only on the NEMOUX platform. Other platforms will not work!
 
 ## Contact Information
 Please contact us at <ins>`hoholee12@gmail.com`</ins> with any questions.
