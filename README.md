@@ -57,7 +57,7 @@ Run NemoSharing_Server by:
 cd NemoSharing_Server
 sudo node index.js
 ```
-The NemoSharing_Server program is designed to run only on the NEMOUX platform. Other platforms will not work!
+The NemoSharing_Server program is designed to run only on the NEMOUX platform.
 
 ## Contact Information
 Please contact us at <ins>`hoholee12@gmail.com`</ins> with any questions.
