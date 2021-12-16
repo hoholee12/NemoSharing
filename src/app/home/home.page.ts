@@ -7,7 +7,6 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient, HttpClientModule } from "@angular/common/http";
 import { Geolocation } from '@ionic-native/geolocation';
 import { Platform, ModalController } from '@ionic/angular';
-
 import { Diagnostic } from '@ionic-native/diagnostic/ngx';
 import { FileChooser } from '@ionic-native/file-chooser/ngx';
 import { FilePath } from '@ionic-native/file-path/ngx';
