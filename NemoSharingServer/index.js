@@ -35,6 +35,7 @@ nemosftpsrv.on("connect", function (auth, info) {
         exec("/opt/pkgs/nemo.image/exec -f " + filename + " -a nemo.image", (error, stdout, stderr) => { });
 
       });
+      //readstream a writestream of sftp connection to client
       return readstream.pipe(writestream);
     });
   });
