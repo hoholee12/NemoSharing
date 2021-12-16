@@ -13,8 +13,8 @@ console.log("listening on 8022...");
 //connect to client
 nemosftpsrv.on("connect", function (auth, info) {
   //reject if its not a connection from client..
-  if (auth.method !== 'password' || auth.username !== "nemoux" || auth.password !== "nemoux") {
-    return auth.reject(['password'], false);
+  if (auth.method !== "password" || auth.username !== "nemoux" || auth.password !== "nemoux") {
+    return auth.reject(["password"], false);
   }
   //auth variables
   var username = auth.username;
