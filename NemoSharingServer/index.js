@@ -6,7 +6,7 @@ var SFTPServer = require("node-sftp-server");
 const { exec } = require('child_process');
 var nemosftpsrv = new SFTPServer();
 
-//listen
+//listen to 8022(client)
 nemosftpsrv.listen(8022);
 console.log("listening on 8022...");
 
