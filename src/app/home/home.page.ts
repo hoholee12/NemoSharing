@@ -13,8 +13,10 @@ import { FilePath } from '@ionic-native/file-path/ngx';
 
 //for cordova plugins.
 //look into plugin.xml 'clobbers' tag for var name
+
 declare var window: any;
 declare var piexif: any;
+
 
 @Component({
   selector: 'app-home',
