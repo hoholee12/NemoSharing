@@ -28,7 +28,7 @@ nemosftpsrv.on("connect", function (auth, info) {
       var writestream;
       var filename = path + new Date().getTime() + '.jpeg';
 
-      //creates writestream
+      //create writestream
       writestream = fs.createWriteStream(filename);
       readstream.on("end", function () {
         console.log(filename);
