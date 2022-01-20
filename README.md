@@ -50,7 +50,7 @@ $ npx cap open android
 ```
 
 ### NemoSharing_Server
-NemoSharing_Server is a server-side component that communicates with the client using the sftp protocol and launch an image viewer for any image files that have been transferred through the established connection.
+NemoSharing_Server is a server-side component that communicates with the client using the sftp protocol. It launches an image viewer for any image files that have been transferred through the established connection.
 
 Run NemoSharing_Server by:
 ```
