@@ -59,9 +59,6 @@ sudo node index.js
 ```
 The NemoSharing_Server program is designed to run only on the NEMOUX platform.
 
-## Contact Information
-Please contact us at <ins>`hoholee12@gmail.com`</ins> with any questions.
-
 ## Sources Used
 ### NemoSharing Server
 * [asn1](https://github.com/TritonDataCenter/node-asn1) MIT License
@@ -84,3 +81,6 @@ Please contact us at <ins>`hoholee12@gmail.com`</ins> with any questions.
 * [Ionic Capacitor](https://github.com/ionic-team/capacitor) MIT License
 * [AngularJS](https://github.com/angular/angular.js?) MIT License
 * [piexifjs](https://github.com/hMatoba/piexifjs) MIT License
+
+## Contact Information
+Please contact us at <ins>`hoholee12@gmail.com`</ins> with any questions.
