@@ -61,3 +61,26 @@ The NemoSharing_Server program is designed to run only on the NEMOUX platform.
 
 ## Contact Information
 Please contact us at <ins>`hoholee12@gmail.com`</ins> with any questions.
+
+## Sources Used
+### NemoSharing Server
+* [asn1](https://github.com/TritonDataCenter/node-asn1) MIT License
+* [core-util-is](https://github.com/isaacs/core-util-is) MIT License
+* [isarray](https://github.com/juliangruber/isarray) MIT License
+* [os-tmpdir](https://github.com/sindresorhus/os-tmpdir) MIT License
+* [readable-stream](https://github.com/nodejs/readable-stream) MIT License
+* [safer-buffer](https://github.com/ChALkeR/safer-buffer) MIT License
+* [ssh2-streams](https://github.com/mscdex/ssh2-streams) MIT License
+* [ssh2](https://github.com/mscdex/ssh2) MIT License
+* [streamsearch](https://github.com/mscdex/streamsearch) MIT License
+* [string_decoder](https://github.com/nodejs/string_decoder) MIT License
+* [tmp](https://github.com/raszi/node-tmp) MIT License
+* [inherits](https://github.com/isaacs/inherits) ISC License
+* [semver](https://github.com/npm/node-semver) ISC License
+* [node-sftp-server](https://github.com/validityhq/node-sftp-server) ISC License
+* [npm](https://github.com/npm/cli) The Artistic License 2.0
+### NemoSharing Client
+* [android] Apache License 2.0
+* [Ionic Capacitor](https://github.com/ionic-team/capacitor) MIT License
+* [AngularJS](https://github.com/angular/angular.js?) MIT License
+* [piexifjs](https://github.com/hMatoba/piexifjs) MIT License
