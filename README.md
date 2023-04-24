@@ -80,7 +80,7 @@ Please contact us at <ins>`hoholee12@gmail.com`</ins> with any questions.
 * [node-sftp-server](https://github.com/validityhq/node-sftp-server) ISC License
 * [npm](https://github.com/npm/cli) The Artistic License 2.0
 ### NemoSharing Client
-* [android] Apache License 2.0
+* [android](https://www.android.com/) Apache License 2.0
 * [Ionic Capacitor](https://github.com/ionic-team/capacitor) MIT License
 * [AngularJS](https://github.com/angular/angular.js?) MIT License
 * [piexifjs](https://github.com/hMatoba/piexifjs) MIT License
